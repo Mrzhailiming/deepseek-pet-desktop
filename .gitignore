@@ -1,0 +1,21 @@
+# Unity 生成物
+DeepseekPet/[Ll]ibrary/
+DeepseekPet/[Tt]emp/
+DeepseekPet/[Oo]bj/
+DeepseekPet/[Bb]uild/
+DeepseekPet/[Bb]uilds/
+DeepseekPet/[Ll]ogs/
+DeepseekPet/[Uu]ser[Ss]ettings/
+DeepseekPet/*.csproj
+DeepseekPet/*.sln
+DeepseekPet/.vs/
+# dotnet 测试工程
+BridgeTests/**/bin/
+BridgeTests/**/obj/
+# dotnet 工具
+PetTools/bin/
+PetTools/obj/
+# 打包产物
+Build/
+# 发布包
+dist/

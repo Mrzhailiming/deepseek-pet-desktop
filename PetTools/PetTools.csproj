@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    PetTools：用 Jint 执行网页版宠物插件的原 JS（快照在 spec/，只当规格和数据源）。
+      export-data   导出数据表 → DeepseekPet/Assets/Resources/PetData/pet-data.json
+      render-art    矢量形态 → DeepseekPet/Assets/Characters/Sprite/Resources/FormSprites/*.png
+      fetch-emoji   用到的 emoji（Twemoji，CC-BY 4.0）→ DeepseekPet/Assets/Resources/Emoji/*.png
+      gen-traces    跑预设剧本，写金样轨迹 → BridgeTests/Core.Tests/Traces/*.json
+      fuzz          随机剧本，JS 和 C# 的 PetCore 同步跑、逐步比对（不落盘）
+    PetCore 的源码直接编进来（fuzz 要用）。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RootNamespace>DeepseekPet.PetTools</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jint" Version="4.17.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <Compile Include="..\DeepseekPet\Assets\Scripts\Core\**\*.cs" Link="Core\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\BridgeTests\Core.Tests\Replay\*.cs" Link="Replay\%(Filename)%(Extension)" />
+    <None Include="harness.js;api.js;art-api.js" CopyToOutputDirectory="PreserveNewest" />
+    <PackageReference Include="Svg.Skia" Version="5.2.3" />
+  </ItemGroup>
+
+</Project>

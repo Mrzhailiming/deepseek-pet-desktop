@@ -1,0 +1,1082 @@
+{
+  "defaults": {
+    "enabled": true,
+    "comboWindowMs": 5000,
+    "maxCombo": 10,
+    "minFood": 1,
+    "maxFood": 30,
+    "tokensPerFood": 60,
+    "foodPerDouble": 2.5,
+    "hungerRegenPerMin": 2,
+    "manualFeedEnabled": true,
+    "manualFeedFood": 15,
+    "manualFeedExp": 1,
+    "manualSnackMax": 5,
+    "manualSnackRegenMs": 45000,
+    "hungryAt": 80,
+    "vitalsEnabled": true,
+    "moodPerFeed": 2,
+    "moodPerPat": 6,
+    "moodDecayPerMin": 0.4,
+    "moodDropPerMinHungry": 2.5,
+    "moodCrashPerMinStarving": 8,
+    "moodExpFreezeAt": 10,
+    "moodExpSwing": 0.4,
+    "moodSadAt": 30,
+    "energyPerFeed": 3,
+    "energyRegenPerMin": 1.2,
+    "energySleepFactor": 3,
+    "lowEnergyAt": 25,
+    "tiredExpFactor": 0.85,
+    "sleepEnabled": true,
+    "sleepAfterMs": 300000,
+    "sleepHungerFactor": 0.5,
+    "patEnabled": true,
+    "patCooldownMs": 1500,
+    "miniGameEnabled": true,
+    "miniGameCooldownMs": 300000,
+    "miniGameTargets": 3,
+    "miniGameTimeoutMs": 2000,
+    "miniGameExpReward": 20,
+    "miniGameSnackReward": 2,
+    "miniGameMoodReward": 15,
+    "bubbleEnabled": true,
+    "bubbleTtlMs": 2600,
+    "bubbleMinGapMs": 4000,
+    "dynamicLinesEvery": 3,
+    "dragEnabled": true,
+    "achievementsEnabled": true,
+    "achievementSnacks": 1,
+    "dailyEnabled": true,
+    "dailyQuestExp": 30,
+    "dailyQuestSnacks": 1,
+    "pickyEnabled": true,
+    "favoriteSource": "tool_result",
+    "favoriteBonus": 1.3,
+    "boredomAfter": 15,
+    "boredomFactor": 1,
+    "varietyBonus": 1.15,
+    "frenzyEnabled": true,
+    "frenzyMs": 15000,
+    "frenzyExpFactor": 2,
+    "frenzyFoodFactor": 1.2,
+    "eggDropEnabled": true,
+    "eggDropBaseChance": 0.005,
+    "eggDropComboBonus": 0.001,
+    "skillsEnabled": true,
+    "skillXpPerLevel": 20,
+    "skillMaxLevel": 10,
+    "masteryXpPerTier": 200,
+    "evolveEnabled": true,
+    "evolveMinLevel": 10,
+    "evolveMinSkillLevel": 5,
+    "prestigeEnabled": true,
+    "prestigeMinLevel": 30,
+    "prestigeExpBonus": 0.05,
+    "memoryEnabled": true,
+    "memoryFileTop": 8,
+    "adviceEnabled": true,
+    "adviceMinSkillLevel": 2,
+    "adviceCooldownMs": 60000,
+    "adviceRepeatEditAt": 3,
+    "adviceErrorStreakAt": 3,
+    "careEnabled": true,
+    "careCooldownMs": 1800000,
+    "careNightFrom": 1,
+    "careNightTo": 4,
+    "careMarathonMs": 7200000,
+    "careComebackMs": 28800000,
+    "moodDimsEnabled": true,
+    "curiosityPerNew": 15,
+    "curiosityPerResearch": 6,
+    "pridePerWin": 20,
+    "pridePerLevelup": 8,
+    "concernPerError": 20,
+    "concernPerWorry": 12,
+    "moodDimDecayPerMin": 1.2,
+    "moodDimAt": 70,
+    "eyeTrackEnabled": true,
+    "eyeTrackMax": 1.6,
+    "eyeTrackIdleMs": 2000,
+    "idleActEnabled": true,
+    "idleActEveryMs": 45000,
+    "idleActQuietMs": 12000,
+    "idleActMs": 1400,
+    "avatarStyle": "svg",
+    "effectsEnabled": true,
+    "effectTtlMs": 2200,
+    "flyFromConversation": true,
+    "freshnessMs": 30000,
+    "persist": true,
+    "saveDebounceMs": 1500,
+    "offlineRegenCapMs": 86400000,
+    "offlineSelfCare": true,
+    "offlineHungerCap": 70,
+    "offlineMoodFloor": 30,
+    "petName": "大肥鱼",
+    "petSpecies": "深海小鲸",
+    "petAvatar": "whale",
+    "petIcon": "🐳"
+  },
+  "constants": {
+    "stateVersion": 2,
+    "maxPets": 999,
+    "maxEggs": 99,
+    "expPerLevel": 100,
+    "memoryToolTop": 12,
+    "memorySlack": 4,
+    "callNameCap": 64,
+    "dailyQuestCount": 3,
+    "skillFallback": "research"
+  },
+  "icons": {
+    "snack": "🍬",
+    "evolve": "✨",
+    "pat": "💗",
+    "quest": "📋",
+    "badge": "🏅"
+  },
+  "baseExp": {
+    "user_input": 1,
+    "generation": 2,
+    "tool_result": 3
+  },
+  "foodIcon": {
+    "user_input": {
+      "tiny": "🌱",
+      "small": "🥕",
+      "large": "🌽",
+      "feast": "🍉"
+    },
+    "generation": {
+      "tiny": "🍤",
+      "small": "🐟",
+      "large": "🐠",
+      "feast": "🐋"
+    },
+    "tool_result": {
+      "tiny": "🍢",
+      "small": "🍖",
+      "large": "🍗",
+      "feast": "🍲"
+    }
+  },
+  "bubbleLines": {
+    "user_input": [
+      "你说话啦？",
+      "嗯嗯，我在听",
+      "这个我记下了",
+      "说吧说吧",
+      "唔，让我想想…",
+      "收到！",
+      "你的字有点好吃",
+      "等等我消化一下",
+      "好的好的～",
+      "然后呢然后呢",
+      "嗯…有道理",
+      "你的打字速度好快"
+    ],
+    "generation": [
+      "模型又说了一大段…",
+      "读得饱饱的",
+      "这段有点长",
+      "唔…信息量好大",
+      "慢点说，我还在嚼",
+      "这一段够我消化一会儿",
+      "又是一大盘字",
+      "字好多…我慢慢看",
+      "唔这口好大",
+      "满满一整盘",
+      "我努力在消化了",
+      "这一口有营养"
+    ],
+    "tool_result": [
+      "工具跑完了！",
+      "这一锅真香",
+      "再来一个工具！",
+      "热的！趁热吃",
+      "这个有嚼头",
+      "工具的味道最正",
+      "还有吗还有吗",
+      "又吃到好东西了",
+      "嗯！这口正",
+      "刚出炉的最好吃",
+      "下一道！",
+      "工具料理是我的最爱"
+    ],
+    "feast": [
+      "好大一锅！",
+      "吃不下了…还能再来一口",
+      "这么大一份？！",
+      "我的天，这一盘",
+      "撑…但是值得",
+      "这一口顶三口",
+      "肚子要撑爆了",
+      "份量好足！",
+      "今天赢麻了"
+    ],
+    "favorite": [
+      "这个我最爱！",
+      "就是这个味儿！",
+      "呜哇，是这个！",
+      "等的就是它",
+      "再来一份好不好",
+      "对味儿了！",
+      "天天吃这个都行！",
+      "这一口值了",
+      "嘿嘿我的最爱"
+    ],
+    "variety": [
+      "换了口味！",
+      "新鲜！",
+      "唔，不一样的味道",
+      "换着吃真好",
+      "这口不一样！",
+      "多样化饮食！",
+      "轮着吃最香",
+      "又是新菜色",
+      "这个换得好"
+    ],
+    "bored": [
+      "一直吃这个…",
+      "换个口味嘛",
+      "唔…我吃过很多这个了",
+      "能不能来点别的",
+      "有点腻了",
+      "还是这个味道啊",
+      "能来点新花样吗",
+      "连着吃好多口了…",
+      "也行吧…"
+    ],
+    "frenzy": [
+      "开吃！！",
+      "全都端上来！",
+      "我的时代来了！",
+      "别停别停别停",
+      "冲！！",
+      "这波我能吃很多",
+      "暴风吸入！！",
+      "我能吞下整个宇宙！",
+      "食力全开！！"
+    ],
+    "hungry": [
+      "肚子空了…",
+      "有零食吗？",
+      "咕…",
+      "我我我饿了",
+      "看看我，饿着呢",
+      "喂点东西嘛…",
+      "肚子在叫了…",
+      "再不吃要饿晕了",
+      "我瘦了…"
+    ],
+    "snack": [
+      "糖！",
+      "谢谢～",
+      "甜的！",
+      "还有吗？",
+      "你最好了",
+      "唔…幸福",
+      "好甜好开心",
+      "这颗糖真好吃",
+      "嘿嘿你对我真好"
+    ],
+    "sleep": [
+      "Zzz…",
+      "先睡一会儿…",
+      "困了…",
+      "睡一下就好…",
+      "呼…呼…",
+      "梦里也有工具结果吗…",
+      "打个盹…",
+      "眼睛合上了…",
+      "五分钟…就五分钟…"
+    ],
+    "wake": [
+      "呼啊——我醒了",
+      "我睡了多久？",
+      "唔…醒了醒了",
+      "刚做了个梦…",
+      "咦，你回来了",
+      "伸个懒腰——",
+      "我是不是睡太久了",
+      "精神回来了！",
+      "活力充沛！"
+    ],
+    "pat": [
+      "嘿嘿",
+      "还要摸",
+      "舒服～",
+      "哼哼…再来",
+      "唔…喜欢",
+      "摸摸头最棒了",
+      "尾巴也可以摸的",
+      "嗯嗯嗯",
+      "好开心…",
+      "你手好暖",
+      "再摸一下嘛"
+    ],
+    "pat_more": [
+      "还、还要吗…",
+      "唔…头发乱了",
+      "别停别停",
+      "咕噜咕噜…",
+      "我要化了…",
+      "你今天好黏人",
+      "再这样我要飘起来了",
+      "整个人都酥了…",
+      "嘿嘿嘿嘿嘿"
+    ],
+    "evolve": [
+      "我长大了！",
+      "看看我！变样了吧",
+      "这就是成长吗",
+      "换了个模样！",
+      "我是不是变帅了",
+      "新形态解锁！"
+    ],
+    "morph": [
+      "我变成这样了！",
+      "这就是我们走的路",
+      "跟你学的",
+      "从今天起我是这个样子",
+      "这就是和你在一起的证据"
+    ],
+    "achieve": [
+      "达成！",
+      "我做到了！",
+      "记在小本本上",
+      "厉害了我",
+      "徽章到手！",
+      "又解锁一个！"
+    ],
+    "quest": [
+      "今天的任务完成了！",
+      "今天的活干完了！",
+      "任务清空，撒花",
+      "打卡成功！",
+      "今日份，达成"
+    ],
+    "skill": [
+      "我好像变熟练了",
+      "这活我上手了！",
+      "手感来了",
+      "我又会一点了",
+      "熟练度 +1！",
+      "越做越顺了",
+      "我进步了！"
+    ],
+    "levelup": [
+      "升级了！",
+      "又强了一点",
+      "Lv 往上跳了一格",
+      "我在变强",
+      "叮！经验值已满",
+      "距离满级又近了"
+    ],
+    "combo": [
+      "连上了！",
+      "手速好快",
+      "别停，接着来",
+      "节奏起来了",
+      "连连连！",
+      "停不下来了"
+    ],
+    "full": [
+      "饱了！",
+      "吃不下了…",
+      "撑到肚子鼓鼓的",
+      "满了满了",
+      "再也塞不下了",
+      "饱到想躺平"
+    ],
+    "tired": [
+      "有点困了…",
+      "眼睛睁不开…",
+      "精力见底了",
+      "撑不住了…",
+      "好想睡…",
+      "充电中…"
+    ],
+    "sad": [
+      "唔…有点难过",
+      "你是不是不太理我了",
+      "我不太开心…",
+      "抱一下嘛",
+      "心情有点低落",
+      "能陪我说说话吗"
+    ],
+    "curious": [
+      "这是什么？",
+      "没见过这个…",
+      "让我看看让我看看",
+      "唔，新东西！",
+      "这个我要记下来",
+      "好奇心爆发了",
+      "想知道更多！"
+    ],
+    "proud": [
+      "嘿嘿，我厉害吧",
+      "看到了吗看到了吗",
+      "这个我在行",
+      "哼哼～",
+      "夸我一下嘛",
+      "这波操作可以吧",
+      "我超棒的！"
+    ],
+    "worried": [
+      "唔…没事吧？",
+      "有点不安…",
+      "我们会好的吧",
+      "要不要停一下…",
+      "我有点担心你",
+      "深呼吸深呼吸",
+      "先别急…"
+    ],
+    "night": [
+      "这么晚还在写代码？",
+      "夜深了…要不歇了吧",
+      "我陪着你，但你也别熬太久",
+      "这个点了，眼睛还好吗",
+      "星星都出来了，你还不睡？",
+      "再写一会儿就睡吧"
+    ],
+    "marathon": [
+      "歇会儿吧，你坐了好久了",
+      "起来走两步？",
+      "干了这么久了，喝口水",
+      "我陪你到现在，你也该累了",
+      "站起来动一动吧",
+      "你的肩膀还好吗"
+    ],
+    "milestone": [
+      "又一个里程碑！",
+      "能走到这里不容易",
+      "我们越来越强了",
+      "看看我们走了多远",
+      "这个等级…值得纪念",
+      "里程碑！记一笔"
+    ],
+    "prestige_chat": [
+      "轮回过的记忆…有些模糊",
+      "上辈子的事还记得一点",
+      "经历越多每一口越有味道",
+      "转世的我变强了一点",
+      "又是新的开始…但这次不一样",
+      "重来一遍也不坏嘛"
+    ]
+  },
+  "skills": [
+    {
+      "key": "coding",
+      "icon": "💻",
+      "label": "编码"
+    },
+    {
+      "key": "research",
+      "icon": "🔍",
+      "label": "探索"
+    },
+    {
+      "key": "debug",
+      "icon": "🐛",
+      "label": "调试"
+    },
+    {
+      "key": "writing",
+      "icon": "✍️",
+      "label": "表达"
+    }
+  ],
+  "toolSkill": {
+    "read": "coding",
+    "write": "coding",
+    "edit": "coding",
+    "str_replace_editor": "coding",
+    "lsp": "coding",
+    "glob": "research",
+    "grep": "research",
+    "web_search": "research",
+    "web_fetch": "research",
+    "read_image": "research",
+    "workspace": "research",
+    "bash": "debug",
+    "pwsh": "debug",
+    "terminal_open": "debug",
+    "terminal_read": "debug",
+    "terminal_send": "debug",
+    "terminal_signal": "debug",
+    "terminal_list": "debug",
+    "terminal_close": "debug",
+    "job_output": "debug",
+    "job_list": "debug",
+    "job_kill": "debug",
+    "todo_write": "writing",
+    "plan": "writing",
+    "report": "writing",
+    "skill": "writing",
+    "subagent": "writing",
+    "send_message": "writing",
+    "list_agents": "writing",
+    "interrupt_agent": "writing"
+  },
+  "editTools": [
+    "write",
+    "edit",
+    "str_replace_editor"
+  ],
+  "whaleStages": [
+    {
+      "key": "baby",
+      "label": "幼崽",
+      "minLevel": 1,
+      "size": 34,
+      "skin": [
+        "#e2ecff",
+        "#b3c9ff",
+        "#8aa4f0"
+      ],
+      "eyeGrow": 1.4,
+      "spout": false,
+      "dorsal": false,
+      "crown": false,
+      "gold": false
+    },
+    {
+      "key": "young",
+      "label": "少年",
+      "minLevel": 3,
+      "size": 44,
+      "skin": [
+        "#8fabff",
+        "#4d6bfe",
+        "#2f4bd8"
+      ],
+      "eyeGrow": 1,
+      "spout": true,
+      "dorsal": false,
+      "crown": false,
+      "gold": false
+    },
+    {
+      "key": "adult",
+      "label": "成年",
+      "minLevel": 6,
+      "size": 54,
+      "skin": [
+        "#6f8cff",
+        "#2740c9",
+        "#16226e"
+      ],
+      "eyeGrow": 0.92,
+      "spout": true,
+      "dorsal": true,
+      "crown": false,
+      "gold": false
+    },
+    {
+      "key": "legend",
+      "label": "传说",
+      "minLevel": 10,
+      "size": 64,
+      "skin": [
+        "#5f7cff",
+        "#1b2a8f",
+        "#0b1240"
+      ],
+      "eyeGrow": 0.92,
+      "spout": false,
+      "dorsal": true,
+      "crown": true,
+      "gold": true
+    }
+  ],
+  "forms": [
+    {
+      "key": "cat",
+      "skill": "coding",
+      "label": "代码猫",
+      "icon": "🐱",
+      "size": 62,
+      "eyeGrow": 0.95
+    },
+    {
+      "key": "fox",
+      "skill": "research",
+      "label": "探索狐",
+      "icon": "🦊",
+      "size": 62,
+      "eyeGrow": 0.95
+    },
+    {
+      "key": "bug",
+      "skill": "debug",
+      "label": "调试虫",
+      "icon": "🪲",
+      "size": 62,
+      "eyeGrow": 0.82
+    },
+    {
+      "key": "bird",
+      "skill": "writing",
+      "label": "文鸟",
+      "icon": "🐦",
+      "size": 62,
+      "eyeGrow": 1.02
+    }
+  ],
+  "moodDims": [
+    {
+      "key": "pride",
+      "icon": "😤",
+      "label": "得意",
+      "line": "proud"
+    },
+    {
+      "key": "curiosity",
+      "icon": "🤔",
+      "label": "好奇",
+      "line": "curious"
+    },
+    {
+      "key": "concern",
+      "icon": "😟",
+      "label": "担忧",
+      "line": "worried"
+    }
+  ],
+  "dimLineKinds": [
+    "curious",
+    "proud",
+    "worried"
+  ],
+  "careKinds": [
+    "night",
+    "marathon",
+    "comeback",
+    "chat"
+  ],
+  "idleActs": [
+    "yawn",
+    "wag",
+    "roll",
+    "peek"
+  ],
+  "achievements": [
+    {
+      "id": "first_feed",
+      "icon": "🍼",
+      "label": "第一口",
+      "hint": "吃到第一口饭"
+    },
+    {
+      "id": "gourmet",
+      "icon": "🍱",
+      "label": "尝遍三味",
+      "hint": "三种食材都吃过"
+    },
+    {
+      "id": "combo_full",
+      "icon": "🔥",
+      "label": "满连击",
+      "hint": "把 Combo 打到顶格"
+    },
+    {
+      "id": "feast",
+      "icon": "🍲",
+      "label": "大胃王",
+      "hint": "一口吃下 feast 档的大餐"
+    },
+    {
+      "id": "tokens_100k",
+      "icon": "💠",
+      "label": "十万吞吐",
+      "hint": "累计消耗 100k token"
+    },
+    {
+      "id": "tokens_1m",
+      "icon": "🌌",
+      "label": "百万吞吐",
+      "hint": "累计消耗 1M token"
+    },
+    {
+      "id": "feeds_100",
+      "icon": "🍚",
+      "label": "百口之家",
+      "hint": "累计喂食 100 次"
+    },
+    {
+      "id": "pats_50",
+      "icon": "🤍",
+      "label": "老朋友",
+      "hint": "摸头 50 次"
+    },
+    {
+      "id": "streak_3",
+      "icon": "📅",
+      "label": "三日之约",
+      "hint": "连续 3 天来喂它"
+    },
+    {
+      "id": "level_legend",
+      "icon": "👑",
+      "label": "传说降临",
+      "hint": "养到 Lv.10 传说档"
+    },
+    {
+      "id": "streak_7",
+      "icon": "🗓",
+      "label": "一周之约",
+      "hint": "连续 7 天来喂它"
+    },
+    {
+      "id": "skill_master",
+      "icon": "🎓",
+      "label": "出师",
+      "hint": "任意一门技能练到满级"
+    },
+    {
+      "id": "recover_50",
+      "icon": "🧰",
+      "label": "老手",
+      "hint": "跨过 50 次工具报错"
+    },
+    {
+      "id": "curious",
+      "icon": "🔭",
+      "label": "十万个为什么",
+      "hint": "把好奇心顶到满格"
+    },
+    {
+      "id": "level_15",
+      "icon": "⭐",
+      "label": "精英之路",
+      "hint": "养到 Lv.15"
+    },
+    {
+      "id": "level_20",
+      "icon": "🌟",
+      "label": "老练之证",
+      "hint": "养到 Lv.20"
+    },
+    {
+      "id": "level_25",
+      "icon": "💫",
+      "label": "大师之印",
+      "hint": "养到 Lv.25"
+    },
+    {
+      "id": "form_collector",
+      "icon": "🎭",
+      "label": "变形记",
+      "hint": "收集 2 种进化形态"
+    },
+    {
+      "id": "form_all",
+      "icon": "🏆",
+      "label": "全图鉴",
+      "hint": "收集全部 4 种进化形态"
+    }
+  ],
+  "questPool": [
+    {
+      "id": "feeds",
+      "icon": "🍽",
+      "label": "今日喂食 10 次",
+      "goal": 10
+    },
+    {
+      "id": "tools",
+      "icon": "🛠",
+      "label": "今日 5 次工具结果",
+      "goal": 5
+    },
+    {
+      "id": "combo",
+      "icon": "🔥",
+      "label": "今日打到 7 连击",
+      "goal": 7
+    },
+    {
+      "id": "feeds20",
+      "icon": "🍽",
+      "label": "今日喂食 20 次",
+      "goal": 20
+    },
+    {
+      "id": "feeds5",
+      "icon": "🍽",
+      "label": "今日喂食 5 次",
+      "goal": 5
+    },
+    {
+      "id": "pats5",
+      "icon": "💗",
+      "label": "今日摸头 5 次",
+      "goal": 5
+    },
+    {
+      "id": "pats15",
+      "icon": "💗",
+      "label": "今日摸头 15 次",
+      "goal": 15
+    },
+    {
+      "id": "tok10k",
+      "icon": "💠",
+      "label": "今日消耗 10k token",
+      "goal": 10000
+    },
+    {
+      "id": "tok50k",
+      "icon": "💠",
+      "label": "今日消耗 50k token",
+      "goal": 50000
+    },
+    {
+      "id": "tools15",
+      "icon": "🛠",
+      "label": "今日 15 次工具结果",
+      "goal": 15
+    },
+    {
+      "id": "snacks3",
+      "icon": "🍬",
+      "label": "今日喂 3 次零食",
+      "goal": 3
+    },
+    {
+      "id": "combo10",
+      "icon": "🔥",
+      "label": "今日打到满连击",
+      "goal": 10
+    }
+  ],
+  "eggTypes": [
+    {
+      "key": "ocean",
+      "label": "海洋蛋",
+      "icon": "🥚",
+      "shell": "#b3d4ff",
+      "species": "whale"
+    },
+    {
+      "key": "forest",
+      "label": "森林蛋",
+      "icon": "🥚",
+      "shell": "#b3f0c4",
+      "species": "fox"
+    },
+    {
+      "key": "code",
+      "label": "代码蛋",
+      "icon": "🥚",
+      "shell": "#e0b3ff",
+      "species": "cat"
+    },
+    {
+      "key": "spark",
+      "label": "灵光蛋",
+      "icon": "🥚",
+      "shell": "#ffe6b3",
+      "species": "bird"
+    },
+    {
+      "key": "circuit",
+      "label": "电路蛋",
+      "icon": "🥚",
+      "shell": "#ffc4c4",
+      "species": "bug"
+    },
+    {
+      "key": "rainbow",
+      "label": "彩虹蛋",
+      "icon": "🥚",
+      "shell": "linear-gradient(135deg,#b3d4ff,#b3f0c4,#e0b3ff,#ffe6b3,#ffc4c4)",
+      "species": "random"
+    }
+  ],
+  "petSpecies": {
+    "whale": {
+      "name": "深深",
+      "icon": "🐳",
+      "avatar": "whale",
+      "label": "深海小鲸",
+      "talent": "饱食+10%",
+      "hungerBonus": 0.1,
+      "skillBonus": null
+    },
+    "cat": {
+      "name": "喵喵",
+      "icon": "🐱",
+      "avatar": "cat",
+      "label": "代码猫",
+      "talent": "编码+15%",
+      "hungerBonus": 0,
+      "skillBonus": {
+        "coding": 0.15
+      }
+    },
+    "fox": {
+      "name": "狐狐",
+      "icon": "🦊",
+      "avatar": "fox",
+      "label": "探索狐",
+      "talent": "探索+15%",
+      "hungerBonus": 0,
+      "skillBonus": {
+        "research": 0.15
+      }
+    },
+    "bird": {
+      "name": "鸟鸟",
+      "icon": "🐦",
+      "avatar": "bird",
+      "label": "文鸟",
+      "talent": "表达+15%",
+      "hungerBonus": 0,
+      "skillBonus": {
+        "writing": 0.15
+      }
+    },
+    "bug": {
+      "name": "虫虫",
+      "icon": "🪲",
+      "avatar": "bug",
+      "label": "调试虫",
+      "talent": "调试+15%",
+      "hungerBonus": 0,
+      "skillBonus": {
+        "debug": 0.15
+      }
+    }
+  },
+  "eggMilestones": [
+    {
+      "id": "tok_50k",
+      "egg": "ocean"
+    },
+    {
+      "id": "tok_200k",
+      "egg": "forest"
+    },
+    {
+      "id": "tok_500k",
+      "egg": "code"
+    },
+    {
+      "id": "tok_1m",
+      "egg": "spark"
+    },
+    {
+      "id": "tok_3m",
+      "egg": "circuit"
+    },
+    {
+      "id": "tok_5m",
+      "egg": "rainbow"
+    },
+    {
+      "id": "conv_200",
+      "egg": "ocean"
+    },
+    {
+      "id": "conv_500",
+      "egg": "forest"
+    },
+    {
+      "id": "conv_1000",
+      "egg": "code"
+    },
+    {
+      "id": "conv_2000",
+      "egg": "spark"
+    },
+    {
+      "id": "ach_5",
+      "egg": "forest"
+    },
+    {
+      "id": "ach_10",
+      "egg": "code"
+    },
+    {
+      "id": "ach_all",
+      "egg": "rainbow"
+    },
+    {
+      "id": "pets_3",
+      "egg": "spark"
+    },
+    {
+      "id": "pets_5",
+      "egg": "circuit"
+    },
+    {
+      "id": "pets_10",
+      "egg": "rainbow"
+    }
+  ],
+  "milestoneLevels": [
+    {
+      "level": 15,
+      "label": "精英",
+      "icon": "⭐"
+    },
+    {
+      "level": 20,
+      "label": "老练",
+      "icon": "🌟"
+    },
+    {
+      "level": 25,
+      "label": "大师",
+      "icon": "💫"
+    }
+  ],
+  "titles": [
+    "新手",
+    "熟练",
+    "老手",
+    "精英",
+    "老练",
+    "大师",
+    "宗师",
+    "转世",
+    "飞升",
+    "不朽",
+    "收藏家",
+    "全图鉴"
+  ],
+  "dynamicLineCounts": {
+    "user_input": 2,
+    "generation": 2,
+    "tool_result": 3,
+    "pat": 3,
+    "combo": 1,
+    "levelup": 1,
+    "skill": 1,
+    "hungry": 1,
+    "wake": 2
+  },
+  "adviceLines": [
+    "repeat_edit",
+    "error_streak",
+    "tool_flaky",
+    "recovered"
+  ],
+  "chatLines": [
+    "comeback",
+    "favorite_file",
+    "tool_habit",
+    "busy_hour",
+    "file_again",
+    "streak",
+    "together",
+    "growth",
+    "tokens_milestone",
+    "skill_note",
+    "file_expert",
+    "resilience"
+  ]
+}

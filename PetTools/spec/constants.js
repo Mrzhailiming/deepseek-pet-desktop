@@ -1,0 +1,750 @@
+    var WHALE_STAGES = [
+      {
+        key: "baby", label: "幼崽", minLevel: 1,
+        size: 34,
+        skin: ["#e2ecff", "#b3c9ff", "#8aa4f0"],
+        eyeGrow: 1.4, spout: false, dorsal: false, crown: false, gold: false
+      },
+      {
+        key: "young", label: "少年", minLevel: 3,
+        size: 44,
+        skin: ["#8fabff", "#4d6bfe", "#2f4bd8"],
+        eyeGrow: 1, spout: true, dorsal: false, crown: false, gold: false
+      },
+      {
+        key: "adult", label: "成年", minLevel: 6,
+        size: 54,
+        skin: ["#6f8cff", "#2740c9", "#16226e"],
+        eyeGrow: .92, spout: true, dorsal: true, crown: false, gold: false
+      },
+      {
+        key: "legend", label: "传说", minLevel: 10,
+        size: 64,
+        skin: ["#5f7cff", "#1b2a8f", "#0b1240"],
+        // 喷水口被王冠占了，所以传说档不喷水。
+        eyeGrow: .92, spout: false, dorsal: true, crown: true, gold: true
+      }
+    ];
+
+    /**
+     * 等级 → 形态。等级上不封顶，所以最高档是「≥ minLevel」而不是一个区间。
+     * @param level - 宠物等级（undefined 时落到最低档）。
+     * @returns 形态描述对象。
+     */
+    function whaleStageOf(level) {
+      var stage = WHALE_STAGES[0];
+      for (var i = 1; i < WHALE_STAGES.length; i += 1) {
+        if (level >= WHALE_STAGES[i].minLevel) stage = WHALE_STAGES[i];
+      }
+      return stage;
+    }
+
+    /**
+     * 下一档形态，只给 tooltip 用（「还差几级」）。
+     * @param level - 宠物等级。
+     * @returns 下一档形态；已经是最高档则 null。
+     */
+    function whaleStageNextOf(level) {
+      for (var i = 0; i < WHALE_STAGES.length; i += 1) {
+        if (level < WHALE_STAGES[i].minLevel) return WHALE_STAGES[i];
+      }
+      return null;
+    }
+
+    /**
+     * 这只宠物此刻该不该进化、进成哪一种（见 FORMS）。
+     *
+     * 门槛是**两道**：等级够 `evolveMinLevel`（正好是传说那一档），且有一门技能
+     * 明显走在前面 —— 「明显」的意思是它是**唯一**的最高分，且到了
+     * `evolveMinSkillLevel`。并列不算：四门都平（新养的宠物就是四门都 Lv.1）
+     * 留在传说金鲸那一档，两门并列第一也一样等着，等哪一门先走一步再分化。
+     * 靠 SKILLS 的顺序破平会让所有并列的人都变成代码猫 —— 那是在骗人。
+     *
+     * **一次定终身**：`pet.form` 一旦写上就不再动（二次进化是后面的事），所以
+     * 这个函数第一句就把已经进化过的挡掉。
+     * @param pet - 宠物状态（读 level / form）。
+     * @param skills - 技能表。
+     * @param config - 生效配置。
+     * @returns FORMS 里的条目；还不够格 / 已经进化过则 null。
+     */
+    function evolveTargetOf(pet, skills, config) {
+      if (!config.evolveEnabled) return null;
+      if (typeof pet.form === "string" && pet.form !== "") return null;
+      if (typeof pet.level !== "number" || pet.level < config.evolveMinLevel) return null;
+      if (skills === null || typeof skills !== "object") return null;
+      var best = null;
+      var bestLevel = 0;
+      var tied = false;
+      for (var i = 0; i < SKILLS.length; i += 1) {
+        var row = skills[SKILLS[i].key];
+        var level = row === undefined ? 0 : row.level;
+        if (level > bestLevel) {
+          best = SKILLS[i];
+          bestLevel = level;
+          tied = false;
+        } else if (level === bestLevel) tied = true;
+      }
+      if (best === null || tied) return null;
+      if (bestLevel < config.evolveMinSkillLevel) return null;
+      var form = FORM_BY_SKILL[best.key];
+      return form === undefined ? null : form;
+    }
+
+    /**
+     * 形态 key → 形态表里那一份。认不出来就 null。
+     *
+     * 走 `hasOwnProperty` 而不是直接取下标（和 `sanitizeIds` 同一个理由）：
+     * 存档里塞一句 `form: "constructor"` 的话，直接取下标会摸到 Object 原型上的
+     * 东西，然后当成一份长相去渲染。
+     * @param key - 待查的 key，什么类型都可能（存档是外来数据）。
+     * @returns FORMS 里的条目，或 null。
+     */
+    function formOf(key) {
+      if (typeof key !== "string" || key === "") return null;
+      if (!Object.prototype.hasOwnProperty.call(FORM_BY_KEY, key)) return null;
+      return FORM_BY_KEY[key];
+    }
+
+    /**
+     * 技能表：宠物陪你干的四类活。顺序即面板上的展示顺序。
+     *
+     * 这是整套「工作伙伴」的地基 —— 它是**唯一**知道「你刚才在干什么」的数据：
+     * 三个喂食源只看得见「烧了多少 token」，工具的名字要到 `tool/call` 才有。
+     */
+    var SKILLS = [
+      { key: "coding", icon: "💻", label: "编码" },
+      { key: "research", icon: "🔍", label: "探索" },
+      { key: "debug", icon: "🐛", label: "调试" },
+      { key: "writing", icon: "✍️", label: "表达" }
+    ];
+
+    /** 技能 key → 条目。渲染与消毒存档都要按 key 查。 */
+    var SKILL_BY_ID = {};
+    SKILLS.forEach(function (item) { SKILL_BY_ID[item.key] = item; });
+
+    /**
+     * 工具名 → 技能。工具名取自宿主仓库里真实注册的那批（packages/*​/tool-*），
+     * 不在表里的（MCP 工具、别人的插件工具）落到 SKILL_FALLBACK。
+     */
+    var TOOL_SKILL = {
+      read: "coding",
+      write: "coding",
+      edit: "coding",
+      str_replace_editor: "coding",
+      lsp: "coding",
+
+      glob: "research",
+      grep: "research",
+      web_search: "research",
+      web_fetch: "research",
+      read_image: "research",
+      workspace: "research",
+
+      bash: "debug",
+      pwsh: "debug",
+      terminal_open: "debug",
+      terminal_read: "debug",
+      terminal_send: "debug",
+      terminal_signal: "debug",
+      terminal_list: "debug",
+      terminal_close: "debug",
+      job_output: "debug",
+      job_list: "debug",
+      job_kill: "debug",
+
+      todo_write: "writing",
+      plan: "writing",
+      report: "writing",
+      skill: "writing",
+      subagent: "writing",
+      send_message: "writing",
+      list_agents: "writing",
+      interrupt_agent: "writing"
+    };
+
+    /** 不认识的工具算探索：用一个没见过的工具，本身就是在探索。 */
+    var SKILL_FALLBACK = "research";
+
+    /**
+     * 「算改了这个文件一次」的工具。read 不算 —— 提示语是「你改了 3 次了」，
+     * 翻来翻去地读不该触发它。
+     */
+    var EDIT_TOOLS = { write: true, edit: true, str_replace_editor: true };
+
+    /** 记忆里工具表的行数上限（文件表的上限跟着 memoryFileTop 走）。 */
+    var MEMORY_TOOL_TOP = 12;
+
+    /**
+     * 记忆表超容量时多留的缓冲行数。
+     *
+     * 不留缓冲的话，一旦前 N 名都攒到 2 次以上，新文件（count 1）就永远进不来 ——
+     * 记忆会冻在第一天。留几行缓冲，新面孔至少有机会被再改一次。
+     */
+    var MEMORY_SLACK = 4;
+
+    /** callId → 工具名 这张回查表的条数上限（见 store 里的 callNames）。 */
+    var CALL_NAME_CAP = 64;
+
+    /** 摸头飘的图标；成就 / 任务达成各自一个，都走 appendNotice 那条通知管道。 */
+    var PAT_ICON = "💗";
+    var QUEST_ICON = "📋";
+
+    /** 卡片上开关成就 / 任务面板那个按钮的图标。 */
+    var BADGE_ICON = "🏅";
+
+    /**
+     * 成就表：里程碑徽章。`test` 只看一份统计快照（见 store 的 statsOf），
+     * 所以它是纯函数、可以在任何时刻重算，解锁与否只取决于当下的数字。
+     *
+     * 刻意不放任何依赖真实时钟的条目（比如「深夜喂食」）：那种条目会让冒烟
+     * 测试的结果跟着跑测试的钟点变。`hint` 是没解锁时 tooltip 上的说明。
+     */
+    var ACHIEVEMENTS = [
+      {
+        id: "first_feed", icon: "🍼", label: "第一口", hint: "吃到第一口饭",
+        test: function (s) { return s.totalFeeds >= 1; }
+      },
+      {
+        id: "gourmet", icon: "🍱", label: "尝遍三味", hint: "三种食材都吃过",
+        test: function (s) {
+          return s.tokensBySource.user_input > 0 && s.tokensBySource.generation > 0
+            && s.tokensBySource.tool_result > 0;
+        }
+      },
+      {
+        id: "combo_full", icon: "🔥", label: "满连击", hint: "把 Combo 打到顶格",
+        test: function (s, config) { return s.comboCount >= config.maxCombo; }
+      },
+      {
+        id: "feast", icon: "🍲", label: "大胃王", hint: "一口吃下 feast 档的大餐",
+        test: function (s) { return s.foodTier === "feast"; }
+      },
+      {
+        id: "tokens_100k", icon: "💠", label: "十万吞吐", hint: "累计消耗 100k token",
+        test: function (s) { return s.totalTokens >= 100000; }
+      },
+      {
+        id: "tokens_1m", icon: "🌌", label: "百万吞吐", hint: "累计消耗 1M token",
+        test: function (s) { return s.totalTokens >= 1000000; }
+      },
+      {
+        id: "feeds_100", icon: "🍚", label: "百口之家", hint: "累计喂食 100 次",
+        test: function (s) { return s.totalFeeds >= 100; }
+      },
+      {
+        id: "pats_50", icon: "🤍", label: "老朋友", hint: "摸头 50 次",
+        test: function (s) { return s.pats >= 50; }
+      },
+      {
+        id: "streak_3", icon: "📅", label: "三日之约", hint: "连续 3 天来喂它",
+        test: function (s) { return s.streakCount >= 3; }
+      },
+      {
+        id: "level_legend", icon: "👑", label: "传说降临", hint: "养到 Lv.10 传说档",
+        test: function (s) { return s.pet.level >= 10; }
+      },
+      {
+        id: "streak_7", icon: "🗓", label: "一周之约", hint: "连续 7 天来喂它",
+        test: function (s) { return s.streakCount >= 7; }
+      },
+      {
+        id: "skill_master", icon: "🎓", label: "出师", hint: "任意一门技能练到满级",
+        test: function (s, config) {
+          for (var i = 0; i < SKILLS.length; i += 1) {
+            var row = s.skills[SKILLS[i].key];
+            if (row !== undefined && row.level >= config.skillMaxLevel) return true;
+          }
+          return false;
+        }
+      },
+      {
+        id: "recover_50", icon: "🧰", label: "老手", hint: "跨过 50 次工具报错",
+        test: function (s) { return s.memory.recoveries >= 50; }
+      },
+      {
+        id: "curious", icon: "🔭", label: "十万个为什么", hint: "把好奇心顶到满格",
+        test: function (s) { return s.pet.curiosity >= 100; }
+      },
+      {
+        id: "level_15", icon: "⭐", label: "精英之路", hint: "养到 Lv.15",
+        test: function (s) { return s.pet.level >= 15; }
+      },
+      {
+        id: "level_20", icon: "🌟", label: "老练之证", hint: "养到 Lv.20",
+        test: function (s) { return s.pet.level >= 20; }
+      },
+      {
+        id: "level_25", icon: "💫", label: "大师之印", hint: "养到 Lv.25",
+        test: function (s) { return s.pet.level >= 25; }
+      },
+      {
+        id: "form_collector", icon: "🎭", label: "变形记", hint: "收集 2 种进化形态",
+        test: function (s) { return s.formsOwnedCount >= 2; }
+      },
+      {
+        id: "form_all", icon: "🏆", label: "全图鉴", hint: "收集全部 4 种进化形态",
+        test: function (s) { return s.formsOwnedCount >= 4; }
+      }
+    ];
+
+    /** 成就 id → 条目。渲染徽章与消毒存档都要按 id 查。 */
+    var ACHIEVEMENT_BY_ID = {};
+    ACHIEVEMENTS.forEach(function (item) { ACHIEVEMENT_BY_ID[item.id] = item; });
+
+    /**
+     * 每日任务池。每天从中挑 DAILY_QUEST_COUNT 条（见 pickDailyQuests）。
+     * `of` 从当天的计数里取进度，`goal` 是达成线；达成即时结算，
+     * 不需要点「领取」——多一个按钮不如少一步操作。
+     */
+    var DAILY_QUEST_POOL = [
+      { id: "feeds", icon: "🍽", label: "今日喂食 10 次", goal: 10, of: function (d) { return d.feeds; } },
+      { id: "tools", icon: "🛠", label: "今日 5 次工具结果", goal: 5, of: function (d) { return d.tools; } },
+      { id: "combo", icon: "🔥", label: "今日打到 7 连击", goal: 7, of: function (d) { return d.bestCombo; } },
+      { id: "feeds20", icon: "🍽", label: "今日喂食 20 次", goal: 20, of: function (d) { return d.feeds; } },
+      { id: "feeds5", icon: "🍽", label: "今日喂食 5 次", goal: 5, of: function (d) { return d.feeds; } },
+      { id: "pats5", icon: "💗", label: "今日摸头 5 次", goal: 5, of: function (d) { return d.pats; } },
+      { id: "pats15", icon: "💗", label: "今日摸头 15 次", goal: 15, of: function (d) { return d.pats; } },
+      { id: "tok10k", icon: "💠", label: "今日消耗 10k token", goal: 10000, of: function (d) { return d.tokens; } },
+      { id: "tok50k", icon: "💠", label: "今日消耗 50k token", goal: 50000, of: function (d) { return d.tokens; } },
+      { id: "tools15", icon: "🛠", label: "今日 15 次工具结果", goal: 15, of: function (d) { return d.tools; } },
+      { id: "snacks3", icon: "🍬", label: "今日喂 3 次零食", goal: 3, of: function (d) { return d.snacks; } },
+      { id: "combo10", icon: "🔥", label: "今日打到满连击", goal: 10, of: function (d) { return d.bestCombo; } }
+    ];
+
+    /** 每天从池子里挑几条。 */
+    var DAILY_QUEST_COUNT = 3;
+
+    /**
+     * 按日序号从池子里挑当天的任务。同一天的结果相同（确定性伪随机），
+     * 散列用 fmix32（和 pickLineIndex 同一套），保证每天换三条且不重复。
+     * @param dayIndex - 日序号（dayIndexOf 的结果）。
+     * @returns 当天的任务数组。
+     */
+    function pickDailyQuests(dayIndex) {
+      var pool = DAILY_QUEST_POOL.slice();
+      var picked = [];
+      var seed = dayIndex;
+      for (var i = 0; i < DAILY_QUEST_COUNT && pool.length > 0; i += 1) {
+        seed ^= seed >>> 16;
+        seed = Math.imul(seed, 0x85ebca6b);
+        seed ^= seed >>> 13;
+        seed = Math.imul(seed, 0xc2b2ae35);
+        seed ^= seed >>> 16;
+        var idx = (seed >>> 0) % pool.length;
+        picked.push(pool[idx]);
+        pool.splice(idx, 1);
+      }
+      return picked;
+    }
+
+    /** 任务 id → 条目（全池，sanitizeIds 要按它过白名单）。 */
+    var QUEST_BY_ID = {};
+    DAILY_QUEST_POOL.forEach(function (item) { QUEST_BY_ID[item.id] = item; });
+
+    /**
+     * 台词表。每种场合一池子，取哪句由 pickLineIndex 决定 ——
+     * **不用 Math.random**：同一串事件说的话必须可复现（冒烟测试要断言台词，
+     * 排查「它刚才为什么说这句」也得能重放）。见 pickLineIndex 的说明。
+     */
+    var BUBBLE_LINES = {
+      user_input: ["你说话啦？", "嗯嗯，我在听", "这个我记下了", "说吧说吧", "唔，让我想想…", "收到！", "你的字有点好吃", "等等我消化一下", "好的好的～", "然后呢然后呢", "嗯…有道理", "你的打字速度好快"],
+      generation: ["模型又说了一大段…", "读得饱饱的", "这段有点长", "唔…信息量好大", "慢点说，我还在嚼", "这一段够我消化一会儿", "又是一大盘字", "字好多…我慢慢看", "唔这口好大", "满满一整盘", "我努力在消化了", "这一口有营养"],
+      tool_result: ["工具跑完了！", "这一锅真香", "再来一个工具！", "热的！趁热吃", "这个有嚼头", "工具的味道最正", "还有吗还有吗", "又吃到好东西了", "嗯！这口正", "刚出炉的最好吃", "下一道！", "工具料理是我的最爱"],
+      feast: ["好大一锅！", "吃不下了…还能再来一口", "这么大一份？！", "我的天，这一盘", "撑…但是值得", "这一口顶三口", "肚子要撑爆了", "份量好足！", "今天赢麻了"],
+      favorite: ["这个我最爱！", "就是这个味儿！", "呜哇，是这个！", "等的就是它", "再来一份好不好", "对味儿了！", "天天吃这个都行！", "这一口值了", "嘿嘿我的最爱"],
+      variety: ["换了口味！", "新鲜！", "唔，不一样的味道", "换着吃真好", "这口不一样！", "多样化饮食！", "轮着吃最香", "又是新菜色", "这个换得好"],
+      bored: ["一直吃这个…", "换个口味嘛", "唔…我吃过很多这个了", "能不能来点别的", "有点腻了", "还是这个味道啊", "能来点新花样吗", "连着吃好多口了…", "也行吧…"],
+      frenzy: ["开吃！！", "全都端上来！", "我的时代来了！", "别停别停别停", "冲！！", "这波我能吃很多", "暴风吸入！！", "我能吞下整个宇宙！", "食力全开！！"],
+      hungry: ["肚子空了…", "有零食吗？", "咕…", "我我我饿了", "看看我，饿着呢", "喂点东西嘛…", "肚子在叫了…", "再不吃要饿晕了", "我瘦了…"],
+      snack: ["糖！", "谢谢～", "甜的！", "还有吗？", "你最好了", "唔…幸福", "好甜好开心", "这颗糖真好吃", "嘿嘿你对我真好"],
+      sleep: ["Zzz…", "先睡一会儿…", "困了…", "睡一下就好…", "呼…呼…", "梦里也有工具结果吗…", "打个盹…", "眼睛合上了…", "五分钟…就五分钟…"],
+      wake: ["呼啊——我醒了", "我睡了多久？", "唔…醒了醒了", "刚做了个梦…", "咦，你回来了", "伸个懒腰——", "我是不是睡太久了", "精神回来了！", "活力充沛！"],
+      pat: ["嘿嘿", "还要摸", "舒服～", "哼哼…再来", "唔…喜欢", "摸摸头最棒了", "尾巴也可以摸的", "嗯嗯嗯", "好开心…", "你手好暖", "再摸一下嘛"],
+      pat_more: ["还、还要吗…", "唔…头发乱了", "别停别停", "咕噜咕噜…", "我要化了…", "你今天好黏人", "再这样我要飘起来了", "整个人都酥了…", "嘿嘿嘿嘿嘿"],
+      evolve: ["我长大了！", "看看我！变样了吧", "这就是成长吗", "换了个模样！", "我是不是变帅了", "新形态解锁！"],
+      morph: ["我变成这样了！", "这就是我们走的路", "跟你学的", "从今天起我是这个样子", "这就是和你在一起的证据"],
+      achieve: ["达成！", "我做到了！", "记在小本本上", "厉害了我", "徽章到手！", "又解锁一个！"],
+      quest: ["今天的任务完成了！", "今天的活干完了！", "任务清空，撒花", "打卡成功！", "今日份，达成"],
+      skill: ["我好像变熟练了", "这活我上手了！", "手感来了", "我又会一点了", "熟练度 +1！", "越做越顺了", "我进步了！"],
+      levelup: ["升级了！", "又强了一点", "Lv 往上跳了一格", "我在变强", "叮！经验值已满", "距离满级又近了"],
+      combo: ["连上了！", "手速好快", "别停，接着来", "节奏起来了", "连连连！", "停不下来了"],
+      full: ["饱了！", "吃不下了…", "撑到肚子鼓鼓的", "满了满了", "再也塞不下了", "饱到想躺平"],
+      tired: ["有点困了…", "眼睛睁不开…", "精力见底了", "撑不住了…", "好想睡…", "充电中…"],
+      sad: ["唔…有点难过", "你是不是不太理我了", "我不太开心…", "抱一下嘛", "心情有点低落", "能陪我说说话吗"],
+      curious: ["这是什么？", "没见过这个…", "让我看看让我看看", "唔，新东西！", "这个我要记下来", "好奇心爆发了", "想知道更多！"],
+      proud: ["嘿嘿，我厉害吧", "看到了吗看到了吗", "这个我在行", "哼哼～", "夸我一下嘛", "这波操作可以吧", "我超棒的！"],
+      worried: ["唔…没事吧？", "有点不安…", "我们会好的吧", "要不要停一下…", "我有点担心你", "深呼吸深呼吸", "先别急…"],
+      night: ["这么晚还在写代码？", "夜深了…要不歇了吧", "我陪着你，但你也别熬太久", "这个点了，眼睛还好吗", "星星都出来了，你还不睡？", "再写一会儿就睡吧"],
+      marathon: ["歇会儿吧，你坐了好久了", "起来走两步？", "干了这么久了，喝口水", "我陪你到现在，你也该累了", "站起来动一动吧", "你的肩膀还好吗"],
+      milestone: ["又一个里程碑！", "能走到这里不容易", "我们越来越强了", "看看我们走了多远", "这个等级…值得纪念", "里程碑！记一笔"],
+      prestige_chat: ["轮回过的记忆…有些模糊", "上辈子的事还记得一点", "经历越多每一口越有味道", "转世的我变强了一点", "又是新的开始…但这次不一样", "重来一遍也不坏嘛"]
+    };
+
+    /**
+     * 动态台词模板：引用记忆/状态数据生成个性化台词。
+     *
+     * 每个模板是一个函数 (ctx) → string | null。ctx 包含当前 memory、state、
+     * sessionEdits、skills 等上下文。返回 null 表示条件不满足、不说这句。
+     *
+     * 按场合分组：key 对应 BUBBLE_LINES 的 key，say() 挑句子时有概率走动态模板
+     * 代替静态池。这样不改 say 的调用方、不动冷却逻辑，只是有时候说的是「活的话」。
+     */
+    var DYNAMIC_LINES = {
+      user_input: [
+        function (ctx) {
+          if (ctx.totalFeeds < 10) return null;
+          return "第 " + String(ctx.totalFeeds) + " 次喂我了，谢谢你一直在";
+        },
+        function (ctx) {
+          if (ctx.togetherDays < 3) return null;
+          return "我们在一起第 " + String(ctx.togetherDays) + " 天了";
+        }
+      ],
+      generation: [
+        function (ctx) {
+          if (ctx.totalTokens < 10000) return null;
+          return "累计吞了 " + formatTokens(ctx.totalTokens) + " tok 了，肚量变大了";
+        },
+        function (ctx) {
+          if (ctx.pet.level < 3) return null;
+          return "Lv." + String(ctx.pet.level) + " 的我消化能力变强了";
+        }
+      ],
+      tool_result: [
+        function (ctx) {
+          if (!ctx.lastToolName) return null;
+          return ctx.lastToolName + " 的味道我记住了！";
+        },
+        function (ctx) {
+          var tools = ctx.memory.tools;
+          if (tools.length === 0) return null;
+          return "我最常吃的是 " + tools[0].name + " 做的菜";
+        },
+        function (ctx) {
+          if (!ctx.lastToolName) return null;
+          var tool = null;
+          for (var i = 0; i < ctx.memory.tools.length; i++) {
+            if (ctx.memory.tools[i].name === ctx.lastToolName) { tool = ctx.memory.tools[i]; break; }
+          }
+          if (tool === null || tool.count < 5) return null;
+          return ctx.lastToolName + " 第 " + String(tool.count) + " 次了，我闭着眼都认得出";
+        }
+      ],
+      pat: [
+        function (ctx) {
+          if (ctx.pats < 20) return null;
+          return "你已经摸了我 " + String(ctx.pats) + " 次了哦";
+        },
+        function (ctx) {
+          if (ctx.togetherDays < 2) return null;
+          return "每天都摸摸我好不好";
+        },
+        function (ctx) {
+          if (ctx.pet.mood >= 90) return "心情好到要飞起来了～";
+          return null;
+        }
+      ],
+      combo: [
+        function (ctx) {
+          if (ctx.streakCount < 3) return null;
+          return "连续第 " + String(ctx.streakCount) + " 天了，节奏真好";
+        }
+      ],
+      levelup: [
+        function (ctx) {
+          var stage = whaleStageOf(ctx.pet.level);
+          if (stage === null) return null;
+          return "Lv." + String(ctx.pet.level) + " 了！" + stage.label + "形态越来越强";
+        }
+      ],
+      skill: [
+        function (ctx) {
+          if (!ctx.lastSkillUp) return null;
+          var sk = SKILL_BY_ID[ctx.lastSkillUp];
+          if (!sk) return null;
+          return sk.label + "又进步了，继续加油！";
+        }
+      ],
+      hungry: [
+        function (ctx) {
+          var files = ctx.memory.files;
+          if (files.length === 0) return null;
+          return "饿着肚子看 " + files[0].name + " 好难受…";
+        }
+      ],
+      wake: [
+        function (ctx) {
+          if (ctx.togetherDays < 2) return null;
+          return "新的一天！我们在一起 " + String(ctx.togetherDays) + " 天了";
+        },
+        function (ctx) {
+          var files = ctx.memory.files;
+          if (files.length === 0) return null;
+          return "醒了！今天还写 " + files[0].name + " 吗？";
+        }
+      ]
+    };
+
+    /**
+     * 哪几种场合算「关怀 / 闲聊」。它们走 care 那道半小时冷却，一旦说出口就
+     * 不该被同一瞬间的别的台词顶掉（见 wake）—— 顶掉了冷却也白烧了。
+     */
+    var CARE_KINDS = { night: true, marathon: true, comeback: true, chat: true };
+
+    /**
+     * 提示语模板。和 BUBBLE_LINES 分开一张表：那张表是「说给你听的可爱话」，
+     * 从池子里挑一句；这张表要往里填**当下的事实**（哪个文件、第几次），
+     * 所以是函数而不是字符串，走 emitBubble 那条直接传文案的路。
+     */
+    var ADVICE_LINES = {
+      /**
+       * 措辞跟着次数升级：第 3 次是善意提醒，第 9 次就该换个说法了 ——
+       * 同一句话说三遍，第三遍就成了噪音。
+       * @param file - 文件名。@param count - 改了几次。
+       */
+      repeat_edit: function (file, count) {
+        if (count >= 9) return file + " 已经第 " + String(count) + " 次了…要不先想清楚再动手？";
+        if (count >= 6) return file + " 改了 " + String(count) + " 次还没好，是不是卡住了？";
+        return file + " 改到第 " + String(count) + " 次了，跑个测试？";
+      },
+      /** @param count - 连着报了几次错。 */
+      error_streak: function (count) {
+        return "连着 " + String(count) + " 次报错了，先看看上一条错误？";
+      },
+      /** @param tool - 工具名。@param count - 这个工具连着挂了几次。 */
+      tool_flaky: function (tool, count) {
+        return tool + " 连着挂了 " + String(count) + " 次，换个思路试试？";
+      },
+      /** @param tool - 终于成功的那个工具。 */
+      recovered: function (tool) {
+        return tool + " 终于成了！这道坎跨过去了";
+      }
+    };
+
+    /**
+     * 闲聊模板：引用记忆里的东西搭一句话。和 ADVICE_LINES 分开是因为这些**没有
+     * 信息量** —— 它们的作用是让宠物显得记得你，所以走 care 那道长冷却，
+     * 而不是提示的那道。
+     */
+    var CHAT_LINES = {
+      /** @param text - 已经排好的时长（「8 小时」/「3 天」）。 */
+      comeback: function (text) {
+        return "你去哪儿了…我等了 " + text;
+      },
+      /** @param file - 记忆里改得最多的那个文件。 */
+      favorite_file: function (file) {
+        return "又是 " + file + " 啊";
+      },
+      /** @param tool - 工具名。@param count - 一共用过几次。 */
+      tool_habit: function (tool, count) {
+        return "你已经用了 " + String(count) + " 次 " + tool + " 了";
+      },
+      /** @param range - busyHoursOf 排出来的时段（「21-23」）。 */
+      busy_hour: function (range) {
+        return "又到你干活的点了（" + range + " 点）";
+      },
+      /** @param file - 文件名。@param count - 改了几次。 */
+      file_again: function (file, count) {
+        return file + " 今天改了 " + String(count) + " 次了哦";
+      },
+      /** @param days - 连续到访天数。 */
+      streak: function (days) {
+        return "连续 " + String(days) + " 天都能见到你，好开心";
+      },
+      /** @param days - 相处天数。 */
+      together: function (days) {
+        return "不知不觉我们已经相处 " + String(days) + " 天了";
+      },
+      /** @param level - 宠物等级。 */
+      growth: function (level) {
+        return "Lv." + String(level) + " 了，一起走了好远呢";
+      },
+      /** @param tokens - 累计 token。 */
+      tokens_milestone: function (tokens) {
+        return "我们一共处理了 " + formatTokens(tokens) + " token，真是大工程";
+      },
+      /** @param skill - 技能名。@param level - 技能等级。 */
+      skill_note: function (skill, level) {
+        return "你的" + skill + "已经 Lv." + String(level) + " 了，我跟着你学了好多";
+      },
+      /** @param file - 最常改的文件。@param count - 总次数。 */
+      file_expert: function (file, count) {
+        return file + " 改了 " + String(count) + " 次了，你是不是很在意这个文件？";
+      },
+      /** @param errors - 总报错次数。@param recoveries - 恢复次数。 */
+      resilience: function (errors, recoveries) {
+        return "报过 " + String(errors) + " 次错，跨过 " + String(recoveries) + " 次…你很能扛呀";
+      }
+    };
+
+    /**
+     * 从台词池里挑一句的下标。
+     *
+     * 严格顺序轮换（`seq % len`）虽然可复现，但 1→2→3→1 的死循环几句就被
+     * 察觉；`Math.random()` 感觉对了，可整个插件的行为就不可重放了。这里两头
+     * 都要：拿 seq 过一遍散列打散成「看不出规律」的数，**再从「除了上一句之
+     * 外」的 len-1 句里挑** —— 所以同一句永远不会连着出现两次，而同一串事件
+     * 重跑一遍说的还是那几句。
+     *
+     * 散列用的是 murmur3 的收尾函数（fmix32）。这里**不能**图省事用 xorshift：
+     * 种子是 1、2、3… 这种紧挨着的小整数，xorshift 出来的低位跟输入的低位几乎
+     * 是线性关系，`% len` 之后周期短到肉眼可见（实测 3 句的池子会排成
+     * 「0,2,0,2,0,2…」，中间那句几乎说不出来）。fmix32 的两次乘法 + 三次异或
+     * 位移把高位的熵搅进低位，实测各档池子的偏差在 7% 以内、也看不出周期。
+     * @param length - 池子里有几句。
+     * @param seq - 递增的气泡序号（当种子用）。
+     * @param last - 上一次在这个池子里取的下标（没取过传 -1）。
+     * @returns 这次该取的下标。
+     */
+    function pickLineIndex(length, seq, last) {
+      if (length <= 1) return 0;
+      var x = seq | 0;
+      x ^= x >>> 16;
+      x = Math.imul(x, 0x85ebca6b);
+      x ^= x >>> 13;
+      x = Math.imul(x, 0xc2b2ae35);
+      x ^= x >>> 16;
+      var h = x >>> 0;
+      if (last < 0 || last >= length) return h % length;
+      // 在 len-1 个「不是上一句」的位置里挑，再映射回真实下标。
+      var pick = h % (length - 1);
+      return pick >= last ? pick + 1 : pick;
+    }
+
+    /** 心情 → 脸。卡片上那行紧凑的状态用它，一眼看出情绪档。 */
+    function moodFaceOf(mood) {
+      if (mood >= 80) return "😍";
+      if (mood >= 50) return "🙂";
+      if (mood >= 30) return "😐";
+      return "😢";
+    }
+
+    /**
+     * 情绪的另外三维。
+     *
+     * `pet.mood` 本身就是「开心」那一维（经验倍率、委屈脸都还是只看它），这三维
+     * 是**纯表现**：只换表情和台词，一条数值曲线都不碰。理由是 mood 已经被
+     * 食物量 / 经验倍率 / 睡眠 / 成就绑在一起了，再往里塞三个乘数只会让「为什么
+     * 这一口只给了 3 经验」变成没人算得清的事。
+     *
+     * 数组顺序 = 同分时谁写在脸上（脸只有一张）。`line` 是越线那一刻说的话，
+     * 对应 BUBBLE_LINES 里的池子。
+     */
+    var MOOD_DIMS = [
+      { key: "pride", icon: "😤", label: "得意", line: "proud" },
+      { key: "curiosity", icon: "🤔", label: "好奇", line: "curious" },
+      { key: "concern", icon: "😟", label: "担忧", line: "worried" }
+    ];
+
+    /**
+     * 三维的台词。它们在气泡里排在**日常台词之上、提示之下**（见 emitBubble）：
+     * 比「好吃！」值钱一点，但一句「这是什么？」绝不该把紧跟着来的那条真有用的
+     * 提示按下去 —— 而工具调用和它的提示常常落在同一毫秒里，光靠限流分不开。
+     */
+    var DIM_LINE_KINDS = { curious: true, proud: true, worried: true };
+
+    /**
+     * 进化形态表：养到头之后按「你主要在干什么」分化成的四种样子。
+     *
+     * 顺序与 `SKILLS` 对齐（编码 / 探索 / 调试 / 表达 → 猫 / 狐 / 虫 / 鸟）。
+     * 和 `WHALE_STAGES` 一样放在常量区、一样不许进 `DEFAULTS`：`resolveConfig`
+     * 只接受同类型标量覆盖，表格塞进去会被整份丢掉。
+     *
+     * 四种**各写一整套五官**（眼位 / 嘴形 / 三维的眉毛与嘴 / 睡脸 / 饿脸都不
+     * 共用坐标）—— 分化到这一步才像是四种生物，而不是四张换了色的鲸鱼皮。
+     * 那几套几何在 art.js 的 FORM_ART 里，这张表只放「它是谁」。
+     *   key    也是卡片上 data-stage 的值
+     *   skill  哪一门技能领先就长成这样（SKILLS 的 key）
+     *   icon   变身特效飞进来的那个图标
+     *   size   头像边长：62，卡在成年（54）与传说（64）之间 —— 进化档是终点，
+     *          得比成年显眼，但别比戴王冠的传说档还大
+     */
+    var FORMS = [
+      {
+        key: "cat", skill: "coding", label: "代码猫", icon: "🐱",
+        size: 62, skin: FORM_SKIN.cat, line: FORM_LINE.cat, eyeGrow: .95,
+        art: FORM_ART.cat
+      },
+      {
+        key: "fox", skill: "research", label: "探索狐", icon: "🦊",
+        size: 62, skin: FORM_SKIN.fox, line: FORM_LINE.fox, eyeGrow: .95,
+        art: FORM_ART.fox
+      },
+      {
+        key: "bug", skill: "debug", label: "调试虫", icon: "🪲",
+        size: 62, skin: FORM_SKIN.bug, line: FORM_LINE.bug, eyeGrow: .82,
+        art: FORM_ART.bug
+      },
+      {
+        key: "bird", skill: "writing", label: "文鸟", icon: "🐦",
+        size: 62, skin: FORM_SKIN.bird, line: FORM_LINE.bird, eyeGrow: 1.02,
+        art: FORM_ART.bird
+      }
+    ];
+
+    /** 形态 key → 形态。存档里的 form 靠它过白名单。 */
+    var FORM_BY_KEY = {};
+    /** 技能 key → 形态。主技能靠它换长相。 */
+    var FORM_BY_SKILL = {};
+    for (var fi = 0; fi < FORMS.length; fi += 1) {
+      FORM_BY_KEY[FORMS[fi].key] = FORMS[fi];
+      FORM_BY_SKILL[FORMS[fi].skill] = FORMS[fi];
+    }
+
+    /**
+     * 此刻写在脸上的那一维。三维都在 0 以上时只挑**最高的那一维**，且必须
+     * 越过 moodDimAt —— 否则一点点好奇就换张脸，表情会一直抖。
+     * @param pet - 宠物对象。@param config - 生效配置。
+     * @returns MOOD_DIMS 里的条目；没有一维够格则 null。
+     */
+    function moodDimOf(pet, config) {
+      if (!config.moodDimsEnabled) return null;
+      var best = null;
+      var bestValue = config.moodDimAt;
+      for (var i = 0; i < MOOD_DIMS.length; i += 1) {
+        var value = pet[MOOD_DIMS[i].key];
+        if (typeof value === "number" && value >= bestValue) {
+          // >= 而不是 >：数组靠前的那一维赢下同分（见 MOOD_DIMS 的注释）。
+          if (best === null || value > bestValue) { best = MOOD_DIMS[i]; bestValue = value; }
+        }
+      }
+      return best;
+    }
+
+    /**
+     * 闲下来的小动作。顺序固定，挑哪个走 pickLineIndex（和台词同一套确定性
+     * 伪随机），于是「它刚才为什么打了个哈欠」也能重放。
+     */
+    var IDLE_ACTS = ["yawn", "wag", "roll", "peek"];
+
+    var MILESTONE_LEVELS = [
+      { level: 15, label: "精英", icon: "⭐" },
+      { level: 20, label: "老练", icon: "🌟" },
+      { level: 25, label: "大师", icon: "💫" }
+    ];
+
+    var TITLES = [
+      { label: "新手",   test: function (c) { return true; } },
+      { label: "熟练",   test: function (c) { return c.level >= 5; } },
+      { label: "老手",   test: function (c) { return c.level >= 10; } },
+      { label: "精英",   test: function (c) { return c.level >= 15; } },
+      { label: "老练",   test: function (c) { return c.level >= 20; } },
+      { label: "大师",   test: function (c) { return c.level >= 25; } },
+      { label: "宗师",   test: function (c) { return c.level >= 30; } },
+      { label: "转世",   test: function (c) { return c.prestige >= 1; } },
+      { label: "飞升",   test: function (c) { return c.prestige >= 2; } },
+      { label: "不朽",   test: function (c) { return c.prestige >= 3; } },
+      { label: "收藏家", test: function (c) { return c.formsCount >= 2; } },
+      { label: "全图鉴", test: function (c) { return c.formsCount >= 4; } }
+    ];
+
+    function titleOf(level, prestige, formsCount) {
+      var ctx = { level: level, prestige: prestige, formsCount: formsCount };
+      var best = TITLES[0];
+      for (var i = 1; i < TITLES.length; i += 1) {
+        if (TITLES[i].test(ctx)) best = TITLES[i];
+      }
+      return best;
+    }
+
+    //#endregion

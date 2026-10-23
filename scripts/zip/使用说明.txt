@@ -1,0 +1,14 @@
+﻿deepseek-pet 桌宠
+
+1. 双击「连接AI助手.cmd」
+   自动接上电脑里装了的 Claude Code、Codex、DeepSeek Harness，并把桌宠启动起来。
+   Claude Code 要新开会话才生效；DeepSeek Harness 要重启 dsh 才生效。
+
+2. 以后直接双击 DeepseekPet.exe 就行。
+
+操作：鼠标放上去看状态；单击摸头；按住拖动；右键出菜单；托盘里的 🐳 可以显示 / 隐藏、退出。
+
+不想用了：双击「断开AI助手.cmd」，再从右键菜单退出，删掉这个文件夹即可。
+存档在 %USERPROFILE%\.deepseek-pet\ ，想从头养就删掉它。
+
+非官方同人项目，与 DeepSeek、Anthropic、OpenAI 均无关。代码以 MIT 许可发布，详见 LICENSE 与 THIRD_PARTY.md。
